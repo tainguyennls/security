@@ -13,7 +13,6 @@ public class MainApp extends JFrame {
     private Image img;
     private JPanel jpApp;
     private JTabbedPane jtp;
-	private RC5View rc5View;
 	private MD5View md5View;
 	private SHAView shaView;
 	private DESView desView;
@@ -48,7 +47,6 @@ public class MainApp extends JFrame {
 		homView = new HomeView();
         md5View = new MD5View();
         shaView = new SHAView();
-        rc5View = new RC5View();
         desView = new DESView();
         rsaView = new RSAView();
         dsiView = new DiSView();
@@ -57,10 +55,9 @@ public class MainApp extends JFrame {
 		jtp.addTab(beforeTemp + "HOME"  + afterTemp, homView);
 		jtp.addTab(beforeTemp + "MD5"   + afterTemp, md5View);
 		jtp.addTab(beforeTemp + "SHA1"  + afterTemp, shaView);
-		jtp.addTab(beforeTemp + "RC5"   + afterTemp, rc5View);
 		jtp.addTab(beforeTemp + "DES"   + afterTemp, desView);
 		jtp.addTab(beforeTemp + "RSA"   + afterTemp, rsaView);
-		jtp.addTab(beforeTemp + "DS"    + afterTemp, dsiView);
+		jtp.addTab(beforeTemp + "ES"    + afterTemp, dsiView);
 		jtp.addTab(beforeTemp + "ABOUT" + afterTemp, aboView);
 
 

@@ -19,10 +19,16 @@ import com.nht.security.algorithms.md.MD5;
 public class MD5View extends JPanel {
 
 	private MD5 md5;
-	private JButton btnInputTextGenerate, btnFileGenerate;
-	private File fSrc,fSrcCheck;
-	private static final long serialVersionUID = 1L;
-	private JTextField txtInputEncrypt, txtInputHashFile, txtFileChecksum, txtMd5Hash, txtHashInput, txtOutput;
+	private File fSrc;
+	private File fSrcCheck;
+	private JTextField txtMd5Hash;
+	private JTextField txtHashInput;
+	private JTextField txtOutput;
+	private JTextField txtInputEncrypt;
+	private JTextField txtInputHashFile;
+	private JTextField txtFileChecksum;
+	private JButton btnFileGenerate;
+	private JButton btnInputTextGenerate;
 
 	public MD5View() {
 

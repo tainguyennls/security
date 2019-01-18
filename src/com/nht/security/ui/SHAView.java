@@ -142,7 +142,7 @@ public class SHAView extends JPanel {
 		btnBrowseFile.setBounds(486, 24, 89, 23);
 		panelCheckHash.add(btnBrowseFile);
 
-		JButton btnCheckHash = new JButton("Check");
+		JButton btnCheckHash = new JButton("Verify");
 		btnCheckHash.setFocusable(false);
 		btnCheckHash.addActionListener(e -> {
 			
