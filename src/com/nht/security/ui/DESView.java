@@ -3,6 +3,7 @@ package com.nht.security.ui;
 import java.awt.Color;
 import java.io.File;
 
+import javax.crypto.SecretKey;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -14,44 +15,47 @@ import javax.swing.UIManager;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
+import com.nht.security.algorithms.io.IO;
 import com.nht.security.algorithms.symmetric.DES;
 
 
 public class DESView extends JPanel {
 
-	private JPanel panelOptions;
-	private JPanel panelImportKey;
-	private JTextField textField;
-	private JTextField txtSourceInput;
-	private JTextField txtSourceOutput;
-	private int inputValue;
-	private int outputValue;
+    private IO io;
 	private File fSrc;
 	private File fDes;
+	private File fSrcImp;
 	private String mod, pad;
 	private DES desEncryption;
-
-	private boolean isFirstStart;
+	private JLabel lblImport;
+	private JPanel pnlOptions;
+    private SecretKey secretKey;
+	private JPanel pnlImportKey;
+	private JButton btnExecute;
+	private JButton btnExportKey;
+	private JButton btnBrowseInput;
+	private JButton btnBrowseOutput;
+	private JButton btnBrowseImport;
+	private JTextField txtSourceInput;
+	private JTextField txtSourceOutput;
+	private JTextField txtSourceImport;
 	private String [] mode = { "ENCRYPT", "DECRYPT" };
 	private String [] padding = { "DES/CBC/PKCS5Padding","DES/ECB/PKCS5Padding" };
-	private static final long serialVersionUID = 1L;
-
 
 	public DESView() {
 
 		setLayout(null);
 		desEncryption = new DES();
-		isFirstStart = true;
+		io = new IO();
 
-		TitledBorder titledBorder = new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Input", TitledBorder.LEFT, TitledBorder.TOP, null, new Color(0, 0, 0));
 		JPanel panelInput = new JPanel();
-		panelInput.setBorder(titledBorder);
-		panelInput.setBounds(10, 25, 606, 72);
+		panelInput.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Location", TitledBorder.LEFT, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		panelInput.setBounds(25, 31, 590, 97);
 		add(panelInput);
 		panelInput.setLayout(null);
 
-		JLabel lblFileSource = new JLabel("File");
-		lblFileSource.setBounds(23, 30, 35, 14);
+		JLabel lblFileSource = new JLabel("Input:");
+		lblFileSource.setBounds(48, 30, 30, 14);
 		panelInput.add(lblFileSource);
 
 		txtSourceInput = new JTextField();
@@ -59,136 +63,180 @@ public class DESView extends JPanel {
 		panelInput.add(txtSourceInput);
 		txtSourceInput.setColumns(10);
 
-		JButton btnBrowseInput = new JButton("Browse");
+		btnBrowseInput = new JButton("Browse");
+		btnBrowseInput.setFocusable(false);
 		btnBrowseInput.addActionListener(e -> {
 			JFileChooser jFileChooserInput = new JFileChooser();
-			if (e.getSource() == btnBrowseInput) {
-				inputValue = jFileChooserInput.showOpenDialog(null);
-				if (inputValue == JFileChooser.APPROVE_OPTION) {
-					fSrc = jFileChooserInput.getSelectedFile();
-					txtSourceInput.setText(fSrc.getPath());
-				}
+			int tmp = jFileChooserInput.showOpenDialog(null);
+			if (tmp == JFileChooser.APPROVE_OPTION) {
+				fSrc = jFileChooserInput.getSelectedFile();
+				txtSourceInput.setText(fSrc.getPath());
+				// bugs
+                System.out.println(fSrc.getPath());
 			}
 		});
 		btnBrowseInput.setBounds(493, 26, 89, 23);
 		panelInput.add(btnBrowseInput);
-
-		JPanel panelOutput = new JPanel();
-		panelOutput.setLayout(null);
-		panelOutput.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Output", TitledBorder.LEFT,
-				TitledBorder.TOP, null, new Color(0, 0, 0)));
-		panelOutput.setBounds(10, 108, 606, 72);
-		add(panelOutput);
-
-		JLabel lblFile = new JLabel("File");
-		lblFile.setBounds(23, 30, 35, 14);
-		panelOutput.add(lblFile);
+		
+		JLabel lblFile = new JLabel("Output:");
+		lblFile.setBounds(40, 61, 43, 14);
+		panelInput.add(lblFile);
 
 		txtSourceOutput = new JTextField();
+		txtSourceOutput.setBounds(84, 58, 399, 20);
+		panelInput.add(txtSourceOutput);
 		txtSourceOutput.setColumns(10);
-		txtSourceOutput.setBounds(83, 27, 399, 20);
-		panelOutput.add(txtSourceOutput);
 
-		JButton btnBrowseOutput = new JButton("Browse");
+		btnBrowseOutput = new JButton("Browse");
+		btnBrowseOutput.setFocusable(false);
+		btnBrowseOutput.setBounds(493, 57, 89, 23);
+		panelInput.add(btnBrowseOutput);
 		btnBrowseOutput.addActionListener(e -> {
 			JFileChooser jFileChooserOutput = new JFileChooser();
 			if (e.getSource() == btnBrowseOutput) {
-				outputValue = jFileChooserOutput.showOpenDialog(null);
-				if (outputValue == JFileChooser.APPROVE_OPTION) {
+				int tmp = jFileChooserOutput.showOpenDialog(null);
+				if (tmp == JFileChooser.APPROVE_OPTION) {
 					fDes = jFileChooserOutput.getSelectedFile();
 					txtSourceOutput.setText(fDes.getPath());
+                    // bugs
+                    System.out.println(fDes.getPath());
 				}
 			}
 		});
-		btnBrowseOutput.setBounds(494, 26, 89, 23);
-		panelOutput.add(btnBrowseOutput);
 
-		panelOptions = new JPanel();
-		panelOptions.setLayout(null);
-		panelOptions.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Options", TitledBorder.LEFT, TitledBorder.TOP, null, new Color(0, 0, 0)));
-		panelOptions.setBounds(10, 191, 606, 116);
-		add(panelOptions);
+		pnlOptions = new JPanel();
+		pnlOptions.setLayout(null);
+		pnlOptions.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "ENCRYPT & DECRYPT", TitledBorder.LEFT, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		pnlOptions.setBounds(25, 144, 590, 112);
+		add(pnlOptions);
 
-		JLabel lblMode = new JLabel("Mode");
-		lblMode.setBounds(23, 71, 35, 14);
-		panelOptions.add(lblMode);
+		JLabel lblMode = new JLabel("Mode:");
+		lblMode.setBounds(46, 71, 35, 14);
+		pnlOptions.add(lblMode);
 
-		JComboBox<?> comboBoxMode = new JComboBox<Object>(mode);
-		comboBoxMode.addActionListener(e -> {
-			mod = (String) comboBoxMode.getSelectedItem();
-			if(!"ENCRYPT".equals(mod)) {
-				isFirstStart = false;
-				panelOptions.add(panelImportKey);
-				repaint();
-			}
-			else if(!isFirstStart) {
-				panelOptions.remove(panelImportKey);
-				//repaint();
-			}
-		});
-		comboBoxMode.setBounds(84, 68, 180, 20);
-		comboBoxMode.setSelectedIndex(0);
-		panelOptions.add(comboBoxMode);
 
-		JLabel lblPadding = new JLabel("Padding");
-		lblPadding.setBounds(341, 71, 51, 14);
-		panelOptions.add(lblPadding);
+		// combo
+
+		JLabel lblPadding = new JLabel("Padding:");
+		lblPadding.setBounds(355, 71, 42, 14);
+		pnlOptions.add(lblPadding);
 
 		JComboBox<?> comboBoxPadding = new JComboBox<Object>(padding);
 		comboBoxPadding.addActionListener(e -> {
 			pad = (String) comboBoxPadding.getSelectedItem();
+            // bugs
+            System.out.println(pad);
 		});
-		comboBoxPadding.setBounds(402, 68, 180, 20);
+		comboBoxPadding.setBounds(402, 68, 178, 20);
+		comboBoxPadding.setFocusable(false);
 		comboBoxPadding.setSelectedIndex(0);
-		panelOptions.add(comboBoxPadding);
+		pnlOptions.add(comboBoxPadding);
 		
-		panelImportKey = new JPanel();
-		panelImportKey.setBorder(null);
-		panelImportKey.setBounds(10, 30, 586, 30);
-		// panel Options add new ....
-		panelImportKey.setLayout(null);
+		pnlImportKey = new JPanel();
+		pnlImportKey.setBorder(null);
+		pnlImportKey.setBounds(10, 30, 570, 30);
+		pnlImportKey.setLayout(null);
 		
-		JLabel label = new JLabel("Import key");
-		label.setBounds(10, 4, 63, 14);
-		panelImportKey.add(label);
+		lblImport = new JLabel("Import key:");
+		lblImport.setBounds(10, 4, 63, 14);
+		pnlImportKey.add(lblImport);
 		
-		textField = new JTextField();
-		textField.setColumns(10);
-		textField.setBounds(71, 1, 399, 20);
-		panelImportKey.add(textField);
+		txtSourceImport = new JTextField();
+		txtSourceImport.setColumns(10);
+		txtSourceImport.setBounds(71, 1, 399, 20);
+		pnlImportKey.add(txtSourceImport);
 		
-		JButton button = new JButton("Browse");
-		button.setBounds(481, 0, 89, 23);
-		panelImportKey.add(button);
+		btnBrowseImport = new JButton("Browse");
+		btnBrowseImport.setFocusable(false);
+		btnBrowseImport.setBounds(481, 0, 89, 23);
 
-		JButton btnExecute = new JButton("Execute");
+		btnBrowseImport.addActionListener(e->{
+            JFileChooser jFileChooserImp = new JFileChooser();
+            int tmp = jFileChooserImp.showOpenDialog(null);
+            if (tmp == JFileChooser.APPROVE_OPTION) {
+                fSrcImp = jFileChooserImp.getSelectedFile();
+                txtSourceImport.setText(fSrcImp.getPath());
+                if(!fSrcImp.getName().endsWith(".sk")){
+                    JOptionPane.showMessageDialog(getParent(),"Your file must end with \".sk\"");
+                }
+                else{
+                    secretKey  = desEncryption.readKey(fSrcImp.getPath());
+                    // bugs
+                    System.out.println(secretKey.toString());
+                }
+            }
+		});
+		pnlImportKey.add(btnBrowseImport);
+
+		pnlOptions.add(pnlImportKey);
+
+		JComboBox<?> comboBoxMode = new JComboBox<Object>(mode);
+		comboBoxMode.addActionListener(e -> {
+			mod = (String) comboBoxMode.getSelectedItem();
+			System.out.println(mod);
+			if("ENCRYPT".equals(mod)) {
+				lblImport.setEnabled(false);
+				txtSourceImport.setEnabled(false);
+				btnBrowseImport.setEnabled(false);
+			}
+			else if("DECRYPT".equals(mod)) {
+				lblImport.setEnabled(true);
+				txtSourceImport.setEnabled(true);
+				btnBrowseImport.setEnabled(true);
+			}
+			repaint();
+		});
+		comboBoxMode.setBounds(81, 68, 184, 20);
+		comboBoxMode.setFocusable(false);
+		comboBoxMode.setSelectedIndex(0);
+		pnlOptions.add(comboBoxMode);
+
+		btnExecute = new JButton("Execute");
+		btnExecute.setFocusable(false);
 		btnExecute.addActionListener(e -> {
 			if ("ENCRYPT".equals(mod)) {
 				try {
 					desEncryption.encrypt(fSrc, fDes, pad);
+					btnExportKey.setEnabled(true);
 					JOptionPane.showMessageDialog(getParent(), "Encrypted");
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
 			} else {
 				try {
-					desEncryption.decryptInputFile(fSrc, fDes, pad);
+					desEncryption.decryptInputFile(fSrc, fDes, pad,secretKey);
 					JOptionPane.showMessageDialog(getParent(), "Decrypted");
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
 			}
 		});
-		btnExecute.setBounds(504, 350, 89, 23);
+		btnExecute.setBounds(515, 385, 89, 23);
 		add(btnExecute);
 
 		JPanel panelHorizontal = new JPanel();
 		panelHorizontal.setBorder(new LineBorder(Color.LIGHT_GRAY));
-		panelHorizontal.setBounds(10, 340, 606, 1);
+		panelHorizontal.setBounds(25, 370, 590, 1);
 		add(panelHorizontal);
 		
-		JButton btnExportKey = new JButton("Export key");
-		btnExportKey.setBounds(405, 350, 89, 23);
+		btnExportKey = new JButton("Export key");
+		btnExportKey.setFocusable(false);
+		btnExportKey.setEnabled(false);
+		btnExportKey.setBounds(416, 385, 89, 23);
+		btnExportKey.addActionListener(e->{
+            JFileChooser chooserSave = new JFileChooser();
+            chooserSave.setDialogTitle("Save");
+            chooserSave.setSelectedFile(new File("secret_key.sk"));
+            int con = chooserSave.showSaveDialog(null);
+            File f = new File("secret_key.sk");
+            File s = chooserSave.getSelectedFile();
+            if(con == JFileChooser.APPROVE_OPTION){
+                boolean isSaved = io.save(f,s);
+                if(isSaved){
+                    JOptionPane.showMessageDialog(getParent(),"Your key is exported");
+                }
+            }
+        });
 		add(btnExportKey);
 
 	}

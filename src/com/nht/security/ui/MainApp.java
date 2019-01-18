@@ -60,7 +60,7 @@ public class MainApp extends JFrame {
 		jtp.addTab(beforeTemp + "RC5"   + afterTemp, rc5View);
 		jtp.addTab(beforeTemp + "DES"   + afterTemp, desView);
 		jtp.addTab(beforeTemp + "RSA"   + afterTemp, rsaView);
-		jtp.addTab(beforeTemp + "CA"    + afterTemp, dsiView);
+		jtp.addTab(beforeTemp + "DS"    + afterTemp, dsiView);
 		jtp.addTab(beforeTemp + "ABOUT" + afterTemp, aboView);
 
 

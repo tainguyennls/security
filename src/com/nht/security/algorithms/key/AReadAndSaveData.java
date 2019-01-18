@@ -24,7 +24,7 @@ public abstract class AReadAndSaveData {
 
     public void saveData(byte [] data,String des){
         File fDes = new File(des);
-        OutputStream os = null;
+        OutputStream os ;
         try{
             os = new BufferedOutputStream(new FileOutputStream(fDes));
             os.write(data);

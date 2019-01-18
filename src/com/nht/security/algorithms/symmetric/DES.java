@@ -38,7 +38,9 @@ public class DES {
 		if("DES/CBC/PKCS5Padding".equals(pad)){
 			cipher.init(Cipher.ENCRYPT_MODE, secretKey, aps);
 		}
-		cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+		else{
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+        }
 
 		InputStream is = new BufferedInputStream(new FileInputStream(src));
 		OutputStream os = new CipherOutputStream(new FileOutputStream(des), cipher);
@@ -46,15 +48,16 @@ public class DES {
 		writeData(is, os);
 	}
 
-	public void decryptInputFile(File src, File des, String pad) throws Exception {
+	public void decryptInputFile(File src, File des, String pad,SecretKey secretKey) throws Exception {
 
-		SecretKey secretKey = readKey("secret_key.sk");
 		AlgorithmParameterSpec aps = new IvParameterSpec(iv);
 		Cipher cipher = Cipher.getInstance(pad);
 		if("DES/CBC/PKCS5Padding".equals(pad)) {
 			cipher.init(Cipher.DECRYPT_MODE, secretKey,aps);
 		}
-		cipher.init(Cipher.DECRYPT_MODE, secretKey);
+		else{
+            cipher.init(Cipher.DECRYPT_MODE, secretKey);
+        }
 		
 
 		InputStream is = new CipherInputStream(new FileInputStream(src), cipher);

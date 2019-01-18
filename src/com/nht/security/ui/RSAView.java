@@ -5,7 +5,6 @@ import java.io.File;
 import java.awt.Font;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.util.Arrays;
 import java.util.Base64;
 
 import javax.swing.JPanel;
@@ -22,12 +21,14 @@ import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
 import com.nht.security.algorithms.asymmetric.RSA;
+import com.nht.security.algorithms.io.IO;
 import com.nht.security.algorithms.key.RSAInitKey;
 import com.nht.security.algorithms.key.RSAReadKey;
 
 public class RSAView extends JPanel {
 
 	private int keySize;
+	private IO io;
 	private PrivateKey privateKey;
 	private PublicKey publicKey;
 	private RSAInitKey rsaInitKey;
@@ -45,19 +46,19 @@ public class RSAView extends JPanel {
 	private JTextArea textAreaOutput;
 	private JComboBox<?> comboBoxKeySize;
 	private JComboBox<?> comboBoxOptions;
-	private String [] options = {"ENCRYPT","DECRYPT"};
-	private String [] arrayBitsKey = { "512", "1024", "2048", "4096" };
 	private JButton btnExport;
-	private String selectedOption ="";
-	private JTextField textField;
+	private String selectedOption;
 	private JPanel panelDecrypt;
 	private JPanel panelEncrypt;
 	private JPanel jplEncryptDecrypt;
+	private String [] options = {"ENCRYPT","DECRYPT"};
+	private String [] arrayBitsKey = { "512", "1024", "2048", "4096" };
 
 	public RSAView() {
 
 		setLayout(null);
 		rsaInitKey = new RSAInitKey();
+		io = new IO();
 
 		jplEncryptDecrypt = new JPanel();
 		jplEncryptDecrypt.setLayout(null);
@@ -68,7 +69,7 @@ public class RSAView extends JPanel {
 		createEncryptLayout();
 		createDecryptLayout();
 		
-		JLabel lblOptions = new JLabel("Options");
+		JLabel lblOptions = new JLabel("Options:");
 		lblOptions.setBounds(10, 52, 43, 14);
 		jplEncryptDecrypt.add(lblOptions);
 
@@ -91,7 +92,7 @@ public class RSAView extends JPanel {
 		comboBoxOptions.setBounds(63, 49, 89, 20);
 		jplEncryptDecrypt.add(comboBoxOptions);
 
-		JLabel lblOutput = new JLabel("OUTPUT");
+		JLabel lblOutput = new JLabel("Output:");
 		lblOutput.setBounds(25, 294, 46, 14);
 		add(lblOutput);
 
@@ -109,7 +110,7 @@ public class RSAView extends JPanel {
 		add(jplGeExport);
 		jplGeExport.setLayout(null);
 
-		JLabel lblKeySize = new JLabel("Key size");
+		JLabel lblKeySize = new JLabel("Key size:");
 		lblKeySize.setBounds(10, 28, 46, 14);
 		jplGeExport.add(lblKeySize);
 
@@ -124,6 +125,7 @@ public class RSAView extends JPanel {
 		jplGeExport.add(comboBoxKeySize);
 
 		btnGenerate = new JButton("Generate");
+		btnGenerate.setFocusable(false);
 		btnGenerate.addActionListener(e -> {
 			rsaInitKey = new RSAInitKey();
 			rsaInitKey.initKey(keySize);
@@ -133,7 +135,22 @@ public class RSAView extends JPanel {
 		jplGeExport.add(btnGenerate);
 		
 		btnExport = new JButton("Export");
+		btnExport.setFocusable(false);
 		btnExport.setBounds(259, 24, 89, 23);
+		btnExport.addActionListener(e->{
+			JFileChooser chooserSave = new JFileChooser();
+			chooserSave.setDialogTitle("Save");
+			chooserSave.setSelectedFile(new File("private_key.k"));
+			int con = chooserSave.showSaveDialog(null);
+			File f = new File("private_key.k");
+			File s = chooserSave.getSelectedFile();
+			if(con == JFileChooser.APPROVE_OPTION){
+				boolean isSaved = io.save(f,s);
+				if(isSaved){
+					JOptionPane.showMessageDialog(getParent(),"Your key is exported");
+				}
+			}
+		});
 		jplGeExport.add(btnExport);
 
 		JScrollPane scrollBar = new JScrollPane(textAreaOutput);
@@ -150,27 +167,29 @@ public class RSAView extends JPanel {
 		jplEncryptDecrypt.add(panelEncrypt);
 		panelEncrypt.setLayout(null);
 
-		JLabel lblPublicKey = new JLabel("Public key");
+		JLabel lblPublicKey = new JLabel("Public key:");
 		lblPublicKey.setBounds(0, 4, 61, 14);
 		panelEncrypt.add(lblPublicKey);
 
 		txtPathPublicKey = new JTextField();
+		txtPathPublicKey.setCaretPosition(0);
 		txtPathPublicKey.setBounds(60, 1, 238, 20);
 		panelEncrypt.add(txtPathPublicKey);
 		txtPathPublicKey.setColumns(10);
 
 		btnBrowseEncrypt = new JButton("");
+		btnBrowseEncrypt.setFocusable(false);
 		btnBrowseEncrypt.setBounds(308, 0, 77, 23);
 		panelEncrypt.add(btnBrowseEncrypt);
 		btnBrowseEncrypt.addActionListener(e -> {
-
 			JFileChooser jFileChooserPublicKey = new JFileChooser();
 			int s = jFileChooserPublicKey.showOpenDialog(null);
 			if (s == JFileChooser.APPROVE_OPTION) {
 				fSrcPublicKey = jFileChooserPublicKey.getSelectedFile();
 				try {
-					publicKey = new RSAReadKey().readPublicKey("public_key.k");
+					publicKey = new RSAReadKey().readPublicKey(fSrcPublicKey.getName());
 					txtPathPublicKey.setText(fSrcPublicKey.getPath());
+					textAreaOutput.setText("");
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
@@ -185,22 +204,22 @@ public class RSAView extends JPanel {
 		panelEncrypt.add(txtInputEncrypt);
 		txtInputEncrypt.setColumns(10);
 
-		JLabel lbl = new JLabel("Input");
-		lbl.setBounds(0, 33, 50, 14);
+		JLabel lbl = new JLabel("Input:");
+		lbl.setBounds(21, 33, 36, 14);
 		panelEncrypt.add(lbl);
 
 		btnEncrypt = new JButton("Encrypt");
+		btnEncrypt.setFocusable(false);
 		btnEncrypt.setBounds(307, 59, 78, 23);
 		panelEncrypt.add(btnEncrypt);
 		btnEncrypt.addActionListener(e -> {
+			String tmp = txtInputEncrypt.getText().trim();
 
-			String txtDe = txtInputEncrypt.getText().trim();
-
-			if (!"".equals(txtDe) && null != fSrcPublicKey)
+			if (!"".equals(tmp) && null != fSrcPublicKey)
 			{
 				if (fSrcPublicKey.getName().endsWith(".k"))
 				{
-					byte[] input = txtDe.getBytes();
+					byte[] input = tmp.getBytes();
 					try {
 						byte[] outEncrypt = new RSA().encrypt(input, publicKey);
 						textAreaOutput.setText(Base64.getEncoder().encodeToString(outEncrypt));
@@ -224,7 +243,7 @@ public class RSAView extends JPanel {
 		panelDecrypt.setLayout(null);
 
 
-		JLabel lblPrivateKey = new JLabel("Private key");
+		JLabel lblPrivateKey = new JLabel("Private key:");
 		lblPrivateKey.setBounds(0, 4, 61, 14);
 		panelDecrypt.add(lblPrivateKey);
 
@@ -239,13 +258,14 @@ public class RSAView extends JPanel {
 		panelDecrypt.add(btnBrowseDecrypt);
 		btnBrowseDecrypt.addActionListener(e -> {
 
-			JFileChooser jFileChooserPrivateKey = new JFileChooser();
-			int st = jFileChooserPrivateKey.showOpenDialog(null);
+			JFileChooser chooserPrivateKey = new JFileChooser();
+			int st = chooserPrivateKey.showOpenDialog(null);
 			if (st == JFileChooser.APPROVE_OPTION) {
-				fSrcPrivateKey = jFileChooserPrivateKey.getSelectedFile();
+				fSrcPrivateKey = chooserPrivateKey.getSelectedFile();
 				try {
-					privateKey = new RSAReadKey().readPrivateKey("private_key.k");
+					privateKey = new RSAReadKey().readPrivateKey(fSrcPrivateKey.getName());
 					txtPathPrivateKey.setText(fSrcPrivateKey.getPath());
+					textAreaOutput.setText("");
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
@@ -258,12 +278,12 @@ public class RSAView extends JPanel {
 		panelDecrypt.add(txtInputDecrypt);
 		txtInputDecrypt.setColumns(10);
 
-		JLabel lblInput = new JLabel("Input");
-		lblInput.setBounds(0, 33, 50, 14);
+		JLabel lblInput = new JLabel("Input:");
+		lblInput.setBounds(28, 33, 36, 14);
 		panelDecrypt.add(lblInput);
 
 		btnDecrypt = new JButton("Decrypt");
-		btnEncrypt.setFocusable(false);
+		btnDecrypt.setFocusable(false);
 		btnDecrypt.setBounds(307, 59, 78, 23);
 		panelDecrypt.add(btnDecrypt);
 		btnDecrypt.addActionListener(e -> {
@@ -278,7 +298,6 @@ public class RSAView extends JPanel {
 					try {
 						byte[] outDecrypt = new RSA().decrypt(input,privateKey);
 						textAreaOutput.setText(new String(outDecrypt));
-						System.out.println(new String(outDecrypt));
 					} catch (Exception e1) {
 						e1.printStackTrace();
 					}
