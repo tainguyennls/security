@@ -71,8 +71,6 @@ public class DESView extends JPanel {
 			if (tmp == JFileChooser.APPROVE_OPTION) {
 				fSrc = jFileChooserInput.getSelectedFile();
 				txtSourceInput.setText(fSrc.getPath());
-				// bugs
-                System.out.println(fSrc.getPath());
 			}
 		});
 		btnBrowseInput.setBounds(493, 26, 89, 23);
@@ -98,8 +96,6 @@ public class DESView extends JPanel {
 				if (tmp == JFileChooser.APPROVE_OPTION) {
 					fDes = jFileChooserOutput.getSelectedFile();
 					txtSourceOutput.setText(fDes.getPath());
-                    // bugs
-                    System.out.println(fDes.getPath());
 				}
 			}
 		});
@@ -124,8 +120,6 @@ public class DESView extends JPanel {
 		JComboBox<?> comboBoxPadding = new JComboBox<Object>(padding);
 		comboBoxPadding.addActionListener(e -> {
 			pad = (String) comboBoxPadding.getSelectedItem();
-            // bugs
-            System.out.println(pad);
 		});
 		comboBoxPadding.setBounds(402, 68, 178, 20);
 		comboBoxPadding.setFocusable(false);
@@ -161,8 +155,6 @@ public class DESView extends JPanel {
                 }
                 else{
                     secretKey  = desEncryption.readKey(fSrcImp.getPath());
-                    // bugs
-                    System.out.println(secretKey.toString());
                 }
             }
 		});

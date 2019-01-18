@@ -10,13 +10,16 @@ import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.io.File;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 
 public class DiSView extends JPanel {
 
+	private IO io;
 	private File fSrcInit;
-	private File  fSrcPk;
+	private File fSrcPk;
 	private File fSrcVerify;
-	private PrivateKey privateKey;
+	private File fSrcPub;
+	private File fSrcSig;
 	private JPanel jpl;
 	private JButton btnBrowseInit;
 	private JButton btnBrowseFileVerify;
@@ -29,7 +32,6 @@ public class DiSView extends JPanel {
 	private JButton btnExportPrivateKey;
 	private JButton btnExportPublicKey;
 	private JButton btnGenerate;
-	private IO io;
 	private JButton btnExportSignature;
 	private ESReadKey esReadKey;
 
@@ -78,7 +80,8 @@ public class DiSView extends JPanel {
 			}
 			else{
 				PrivateKey pv = esReadKey.readPrivateKey(txtInitPrivateKey.getText().trim());
-				boolean signed = es.signSignature(fSrcInit,"signature.s",pv);
+				boolean signed = es.signSignature(fSrcInit,"es_signature.sk",pv);
+				btnExportSignature.setEnabled(true);
 				if(signed){
 					JOptionPane.showMessageDialog(getParent(),"Your file is signed");
 				}
@@ -127,11 +130,29 @@ public class DiSView extends JPanel {
 		btnBrowseFileVerify = new JButton("Browse");
 		btnBrowseFileVerify.setFocusable(false);
 		btnBrowseFileVerify.setBounds(486, 22, 89, 23);
+		btnBrowseFileVerify.addActionListener(e->{
+			JFileChooser init = new JFileChooser();
+			int tmp  = init.showOpenDialog(null);
+			if(tmp == JFileChooser.APPROVE_OPTION) {
+				fSrcVerify = init.getSelectedFile();
+				txtSrcVerify.setText(fSrcVerify.getPath());
+				System.out.println(fSrcVerify.getPath());
+			}
+		});
 		pnVerify.add(btnBrowseFileVerify);
 		
 		JButton btnVerifyBrowseSig = new JButton("Browse");
 		btnVerifyBrowseSig.setFocusable(false);
 		btnVerifyBrowseSig.setBounds(486, 55, 89, 23);
+		btnVerifyBrowseSig.addActionListener(e->{
+			JFileChooser init = new JFileChooser();
+			int tmp  = init.showOpenDialog(null);
+			if(tmp == JFileChooser.APPROVE_OPTION) {
+				fSrcSig = init.getSelectedFile();
+				txtVerifySig.setText(fSrcSig.getPath());
+				System.out.println(fSrcSig.getPath());
+			}
+		});
 		pnVerify.add(btnVerifyBrowseSig);
 		
 		txtVerifySig = new JTextField();
@@ -155,11 +176,35 @@ public class DiSView extends JPanel {
 		JButton btnVerifyBrowsePublicKey = new JButton("Browse");
 		btnVerifyBrowsePublicKey.setFocusable(false);
 		btnVerifyBrowsePublicKey.setBounds(486, 89, 89, 23);
+		btnVerifyBrowsePublicKey.addActionListener(e->{
+			JFileChooser init = new JFileChooser();
+			int tmp  = init.showOpenDialog(null);
+			if(tmp == JFileChooser.APPROVE_OPTION) {
+				fSrcPub = init.getSelectedFile();
+				txtVerifyPub.setText(fSrcPub.getPath());
+				System.out.println(fSrcPub.getPath());
+			}
+		});
 		pnVerify.add(btnVerifyBrowsePublicKey);
 		
 		JButton btnVerify = new JButton("Verify");
 		btnVerify.setFocusable(false);
 		btnVerify.setBounds(486, 123, 89, 23);
+		btnVerify.addActionListener(e->{
+			if(null == fSrcVerify || null == fSrcSig || null == fSrcPub){
+				JOptionPane.showMessageDialog(getParent(),"Fill all data before verify");
+			}
+			else{
+				PublicKey pk = esReadKey.readPublicKey(txtVerifyPub.getText().trim());
+				boolean verify = es.verifySignature(fSrcVerify,txtVerifySig.getText().trim(),pk);
+				if(verify){
+					JOptionPane.showMessageDialog(getParent(),"Right signature");
+				}
+				else{
+					JOptionPane.showMessageDialog(getParent(),"Wrong signature");
+				}
+			}
+		});
 		pnVerify.add(btnVerify);
 		
 		JPanel panel = new JPanel();
@@ -210,6 +255,19 @@ public class DiSView extends JPanel {
 		btnExportSignature.setFocusable(false);
 		btnExportSignature.setEnabled(false);
 		btnExportSignature.setBounds(178, 22, 121, 23);
+		btnExportSignature.addActionListener(e->{
+			JFileChooser chooserSave = new JFileChooser();
+			chooserSave.setSelectedFile(new File("es_signature.sk"));
+			int con = chooserSave.showSaveDialog(null);
+			File f = new File("es_signature.sk");
+			File s = chooserSave.getSelectedFile();
+			if(con == JFileChooser.APPROVE_OPTION){
+				boolean isSaved = io.save(f,s);
+				if(isSaved){
+					JOptionPane.showMessageDialog(getParent(),"Your signature is exported");
+				}
+			}
+		});
 		panel.add(btnExportSignature);
 		
 		btnGenerate = new JButton("Generate");
@@ -218,7 +276,6 @@ public class DiSView extends JPanel {
 		btnGenerate.addActionListener(e->{
 			btnExportPrivateKey.setEnabled(true);
 			btnExportPublicKey.setEnabled(true);
-			btnExportSignature.setEnabled(true);
 			es.gen();
 		});
 		panel.add(btnGenerate);

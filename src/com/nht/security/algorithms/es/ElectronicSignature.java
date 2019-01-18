@@ -26,14 +26,14 @@ public class ElectronicSignature {
      * @return
      */
 
-    public boolean verifySignature(String src, String sig, String key){
+    public boolean verifySignature(File src, String sig, PublicKey key){
 
         try{
-            PublicKey publicKey = rsaReadKey.readPublicKey(key);
+
             byte [] tmp = rsaReadKey.readData(sig);
 
             Signature signature = Signature.getInstance("SHA1withDSA","SUN");
-            signature.initVerify(publicKey);
+            signature.initVerify(key);
 
             BufferedInputStream bis = new BufferedInputStream(new FileInputStream(src));
             byte [] buffer = new byte[1024];
